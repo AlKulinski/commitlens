@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/alkowskey/commit-suggester/internal/diff/domain"
+	"github.com/alkowskey/commit-suggester/internal/diff/infra"
+	"github.com/alkowskey/commit-suggester/internal/diff/usecases"
 	"github.com/urfave/cli/v3"
 )
 
@@ -26,7 +29,21 @@ func newDiffCmd() *cli.Command {
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			path_a := cmd.String("from")
 			path_b := cmd.String("to")
-			fmt.Printf("diff of %s ... %s", path_a, path_b)
+			differ := infra.NewBaseDiffer()
+			usecase := usecases.NewDiffUsecase(path_a, path_b, differ)
+			diffRequest := domain.DiffRequest{
+				Options: domain.DiffOptions{
+					Ignore: []string{"*.md", "*.txt"},
+				},
+			}
+			result, err := usecase.Execute(diffRequest)
+
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(result.Added)
+			fmt.Println(result.Removed)
 			return nil
 		},
 	}
