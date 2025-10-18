@@ -16,7 +16,7 @@ func newTrackCmd(db *sql.DB) *cli.Command {
 		Commands: []*cli.Command{
 			newTrackStartCmd(db),
 			newFlushCmd(db),
-			newTrackStopCmd(),
+			newTrackCompareCmd(db),
 		},
 	}
 }
@@ -65,11 +65,21 @@ func newFlushCmd(db *sql.DB) *cli.Command {
 	}
 }
 
-func newTrackStopCmd() *cli.Command {
+func newTrackCompareCmd(db *sql.DB) *cli.Command {
 	return &cli.Command{
-		Name: "stop",
+		Name: "compare",
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			fmt.Printf("tacking stopped")
+			fmt.Printf("tacking compared")
+			snapshotRepository := repository.NewSnapshotRepository(db)
+			usecase := usecases.NewCompareUsecase(snapshotRepository)
+			snapshots, err := usecase.Execute()
+			if err != nil {
+				return err
+			}
+
+			for _, snapshot := range snapshots {
+				fmt.Printf("%s\n", snapshot)
+			}
 			return nil
 		},
 	}

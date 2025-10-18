@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"fmt"
+
 	"github.com/alkowskey/commit-suggester/internal/snapshot/domain/errors"
 	"github.com/google/uuid"
 )
@@ -13,6 +15,10 @@ type Snapshot struct {
 	Hash      uint64
 	Size      int64
 	Mtime     int64
+}
+
+func (s Snapshot) String() string {
+	return fmt.Sprintf("Snapshot{Path: %s, Hash: %d, Size: %d}", s.Path, s.Hash, s.Size)
 }
 
 var ErrSnapshotsAlreadyExist = errors.ErrSnapshotsAlreadyExist
