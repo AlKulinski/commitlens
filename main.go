@@ -7,7 +7,8 @@ import (
 
 func main() {
 	version := "1.0.0"
-	cmd.Execute(version)
 	db := db.InitDb()
 	defer db.Close()
+
+	cmd.Execute(version, db)
 }

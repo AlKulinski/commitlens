@@ -2,24 +2,25 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 
 	"github.com/urfave/cli/v3"
 )
 
-func newRootCmd(version string) *cli.Command {
+func newRootCmd(version string, db *sql.DB) *cli.Command {
 	return &cli.Command{
 		Commands: []*cli.Command{
 			newVersionCmd(version),
 			newDiffCmd(),
-			newTrackCmd(),
+			newTrackCmd(db),
 		},
 	}
 }
 
-func Execute(version string) error {
-	cmd := newRootCmd(version)
+func Execute(version string, db *sql.DB) error {
+	cmd := newRootCmd(version, db)
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
