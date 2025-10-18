@@ -15,6 +15,7 @@ func newTrackCmd(db *sql.DB) *cli.Command {
 		Name: "track",
 		Commands: []*cli.Command{
 			newTrackStartCmd(db),
+			newFlushCmd(db),
 			newTrackStopCmd(),
 		},
 	}
@@ -23,17 +24,42 @@ func newTrackCmd(db *sql.DB) *cli.Command {
 func newTrackStartCmd(db *sql.DB) *cli.Command {
 	return &cli.Command{
 		Name: "start",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "directory",
+				Aliases:  []string{"d"},
+				Usage:    "Directory to track",
+				Required: true,
+			},
+		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
+			subdirectory := cmd.String("directory")
+
 			snapshotRepository := repository.NewSnapshotRepository(db)
 			usecase := usecases.NewTrackStartUsecase(snapshotRepository)
-			err := usecase.Execute(
-				"test_files/b.txt",
-				"test_files/a.txt",
-			)
+			err := usecase.Execute(subdirectory)
 			if err != nil {
 				return err
 			}
 			fmt.Printf("tacking started")
+			return nil
+		},
+	}
+}
+
+func newFlushCmd(db *sql.DB) *cli.Command {
+	return &cli.Command{
+		Name:    "flush",
+		Aliases: []string{"f"},
+		Usage:   "flush all data",
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			snapshotRepository := repository.NewSnapshotRepository(db)
+			usecase := usecases.NewFlushSnapshotsUsecase(snapshotRepository)
+			err := usecase.Execute()
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Snapshots flushed")
 			return nil
 		},
 	}

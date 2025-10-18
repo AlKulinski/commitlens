@@ -9,6 +9,8 @@ import (
 type SnapshotRepository interface {
 	StoreSnapshot(snapshot domain.Snapshot) error
 	StoreBatchSnapshots(snapshot []domain.Snapshot) error
+	FlushSnapshots() error
+	GetSnapshots() ([]domain.Snapshot, error)
 }
 
 type SnapshotRepositoryImpl struct {
@@ -19,6 +21,32 @@ func NewSnapshotRepository(db *sql.DB) SnapshotRepository {
 	return &SnapshotRepositoryImpl{
 		db: db,
 	}
+}
+
+func (s *SnapshotRepositoryImpl) GetSnapshots() ([]domain.Snapshot, error) {
+	rows, err := s.db.Query("SELECT id, path, hash, size, mtime FROM snapshots")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var snapshots []domain.Snapshot
+	for rows.Next() {
+		var snapshot SnapshotEntity
+		err := rows.Scan(&snapshot.ID, &snapshot.Path, &snapshot.Hash, &snapshot.Size, &snapshot.Mtime)
+		if err != nil {
+			return nil, err
+		}
+		snapshots = append(snapshots, snapshot.toDomain())
+	}
+	return snapshots, nil
+}
+
+func (s *SnapshotRepositoryImpl) FlushSnapshots() error {
+	_, err := s.db.Exec("DELETE FROM snapshots")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *SnapshotRepositoryImpl) StoreSnapshot(snapshot domain.Snapshot) error {

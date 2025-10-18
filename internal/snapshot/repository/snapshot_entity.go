@@ -1,30 +1,40 @@
 package repository
 
-import "github.com/alkowskey/commit-suggester/internal/snapshot/domain"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
+	"github.com/google/uuid"
+)
 
 type SnapshotEntity struct {
-	ID    int
+	ID    uuid.UUID
 	Path  string
 	Hash  string
-	Size  int
-	Mtime int
+	Size  int64
+	Mtime int64
 }
 
 func entityFromDomain(s domain.Snapshot) SnapshotEntity {
 	return SnapshotEntity{
 		ID:    s.ID,
 		Path:  s.Path,
-		Hash:  s.Hash,
+		Hash:  fmt.Sprintf("%016x", s.Hash),
 		Size:  s.Size,
 		Mtime: s.Mtime,
 	}
 }
 
 func (e SnapshotEntity) toDomain() domain.Snapshot {
+	hash, err := strconv.ParseUint(e.Hash, 16, 64)
+	if err != nil {
+		panic(err)
+	}
 	return domain.Snapshot{
 		ID:    e.ID,
 		Path:  e.Path,
-		Hash:  e.Hash,
+		Hash:  hash,
 		Size:  e.Size,
 		Mtime: e.Mtime,
 	}
