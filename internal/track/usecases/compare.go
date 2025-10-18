@@ -2,19 +2,19 @@ package usecases
 
 import (
 	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
+	"github.com/alkowskey/commit-suggester/internal/snapshot/services"
 )
 
 type CompareUsecase struct {
-	snapshotRepository repository.SnapshotRepository
+	snapshotService services.SnapshotService
 }
 
-func NewCompareUsecase(snapshotRepository repository.SnapshotRepository) *CompareUsecase {
+func NewCompareUsecase(snapshotService services.SnapshotService) *CompareUsecase {
 	return &CompareUsecase{
-		snapshotRepository: snapshotRepository,
+		snapshotService: snapshotService,
 	}
 }
 
-func (u *CompareUsecase) Execute() ([]domain.Snapshot, error) {
-	return u.snapshotRepository.GetSnapshots()
+func (u *CompareUsecase) Execute(subdirectory string) ([]domain.Snapshot, error) {
+	return u.snapshotService.Compare(subdirectory)
 }
