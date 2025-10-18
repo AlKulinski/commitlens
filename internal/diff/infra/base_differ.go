@@ -49,14 +49,12 @@ func (d *BaseDiffer) diff(sourceFile *os.File, targetFile *os.File) (domain.Diff
 		hasSource := scannerSource.Scan()
 		hasTarget := scannerTarget.Scan()
 
-		// Both files ended at the same time
 		if !hasSource && !hasTarget {
 			break
 		}
 
 		var sourceLine, targetLine string
 
-		// Get the current lines (empty string if file ended)
 		if hasSource {
 			sourceLine = scannerSource.Text()
 		}
@@ -64,24 +62,19 @@ func (d *BaseDiffer) diff(sourceFile *os.File, targetFile *os.File) (domain.Diff
 			targetLine = scannerTarget.Text()
 		}
 
-		// Handle different cases
 		if !hasSource && hasTarget {
-			// Source file ended, but target has more lines (additions)
 			result.Added = append(result.Added, targetLine)
 			result.HasDifferences = true
 		} else if hasSource && !hasTarget {
-			// Target file ended, but source has more lines (removals)
 			result.Removed = append(result.Removed, sourceLine)
 			result.HasDifferences = true
 		} else if sourceLine != targetLine {
-			// Both files have lines, but they're different
 			result.Removed = append(result.Removed, sourceLine)
 			result.Added = append(result.Added, targetLine)
 			result.HasDifferences = true
 		}
 	}
 
-	// Check for scanner errors
 	if err := scannerSource.Err(); err != nil {
 		return domain.DiffResult{}, err
 	}

@@ -13,6 +13,7 @@ func newRootCmd(version string) *cli.Command {
 		Commands: []*cli.Command{
 			newVersionCmd(version),
 			newDiffCmd(),
+			newTrackCmd(),
 		},
 	}
 }
