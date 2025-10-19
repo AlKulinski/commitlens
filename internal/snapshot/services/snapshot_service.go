@@ -2,8 +2,12 @@ package services
 
 import (
 	"fmt"
+	"path/filepath"
+	"sync"
 
 	"github.com/alkowskey/commit-suggester/internal/common/utils"
+	diffDomain "github.com/alkowskey/commit-suggester/internal/diff/domain"
+	"github.com/alkowskey/commit-suggester/internal/diff/services"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
 	"github.com/google/uuid"
@@ -12,30 +16,39 @@ import (
 type SnapshotService interface {
 	TakeSnapshot(string) ([]domain.Snapshot, error)
 	Compare(string) ([]domain.Snapshot, error)
-	GetSnapshotDirectory(string) string
+	GetSnapshotDirectory(...string) string
 }
 
 type SnapshotServiceImpl struct {
 	snapshotRepository repository.SnapshotRepository
+	diffService        services.DiffService
 }
 
-func NewSnapshotService(snapshotRepository repository.SnapshotRepository) SnapshotService {
+func NewSnapshotService(snapshotRepository repository.SnapshotRepository, diffService services.DiffService) SnapshotService {
 	return &SnapshotServiceImpl{
 		snapshotRepository: snapshotRepository,
+		diffService:        diffService,
 	}
 }
 
-func (s *SnapshotServiceImpl) GetSnapshotDirectory(subdirectory string) string {
-	snapshotDir, err := utils.GetWorkingDirectory()
-
+func (s *SnapshotServiceImpl) GetSnapshotDirectory(directories ...string) string {
+	workingDir, err := utils.GetWorkingDirectory()
 	if err != nil {
 		panic(err)
 	}
 
-	return fmt.Sprintf(".cache/%s/%s", snapshotDir, subdirectory)
+	snapshotDir := filepath.Join(".cache", workingDir)
+
+	if len(directories) > 0 {
+		pathComponents := append([]string{snapshotDir}, directories...)
+		snapshotDir = filepath.Join(pathComponents...)
+	}
+
+	return snapshotDir
 }
 
 func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, error) {
+	cachedPathPrefix := s.GetSnapshotDirectory()
 	existingSnapshots, err := s.snapshotRepository.GetSnapshots()
 	if err != nil {
 		return nil, err
@@ -52,7 +65,40 @@ func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, e
 	}
 
 	snapshotDiffs := compareSnapshots(existingSnapshots, fileSnapshots)
+	diff := s.processSnapshotDifferences(snapshotDiffs, cachedPathPrefix)
+
+	fmt.Printf("%s", diff)
 	return snapshotDiffs, nil
+}
+
+func (s *SnapshotServiceImpl) processSnapshotDifferences(
+	snapshotDiffs []domain.Snapshot,
+	cachedPathPrefix string,
+) []diffDomain.DiffResult {
+	results := make(chan diffDomain.DiffResult, len(snapshotDiffs))
+	var wg sync.WaitGroup
+
+	for _, snapshotDiff := range snapshotDiffs {
+		wg.Add(1)
+		go func(sd domain.Snapshot) {
+			defer wg.Done()
+			cachedPath := fmt.Sprintf("%s/%s", cachedPathPrefix, sd.Path)
+			result, err := s.diffService.CompareFiles(sd.Path, cachedPath)
+			if err != nil {
+				panic(err)
+			}
+			results <- result
+		}(snapshotDiff)
+	}
+
+	wg.Wait()
+	close(results)
+	var diffResults []diffDomain.DiffResult
+	for val := range results {
+		diffResults = append(diffResults, val)
+	}
+
+	return diffResults
 }
 
 func (s *SnapshotServiceImpl) TakeSnapshot(subdirectory string) ([]domain.Snapshot, error) {

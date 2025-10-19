@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/alkowskey/commit-suggester/internal/diff/infra"
+	diffServices "github.com/alkowskey/commit-suggester/internal/diff/services"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/services"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/usecases"
@@ -39,7 +41,9 @@ func newTrackStartCmd(db *sql.DB) *cli.Command {
 			subdirectory := cmd.String("directory")
 
 			snapshotRepository := repository.NewSnapshotRepository(db)
-			snapshotService := services.NewSnapshotService(snapshotRepository)
+			differ := infra.NewBaseDiffer()
+			diffService := diffServices.NewDiffService(differ)
+			snapshotService := services.NewSnapshotService(snapshotRepository, diffService)
 			usecase := usecases.NewTrackStartUsecase(snapshotService)
 
 			err := usecase.Execute(subdirectory)
@@ -87,7 +91,9 @@ func newTrackCompareCmd(db *sql.DB) *cli.Command {
 			subdirectory := cmd.String("directory")
 
 			snapshotRepository := repository.NewSnapshotRepository(db)
-			snapshotService := services.NewSnapshotService(snapshotRepository)
+			differ := infra.NewBaseDiffer()
+			diffService := diffServices.NewDiffService(differ)
+			snapshotService := services.NewSnapshotService(snapshotRepository, diffService)
 			usecase := usecases.NewCompareUsecase(snapshotService)
 
 			diff, err := usecase.Execute(subdirectory)
