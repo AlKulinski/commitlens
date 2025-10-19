@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/alkowskey/commit-suggester/internal/diff/domain"
-	"github.com/alkowskey/commit-suggester/internal/diff/infra"
-	"github.com/alkowskey/commit-suggester/internal/diff/usecases"
+	"github.com/alkowskey/commitlens/internal/diff/domain"
+	"github.com/alkowskey/commitlens/internal/diff/infra"
+	"github.com/alkowskey/commitlens/internal/diff/usecases"
 	"github.com/urfave/cli/v3"
 )
 

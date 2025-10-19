@@ -3,7 +3,7 @@ package domain
 import (
 	"fmt"
 
-	"github.com/alkowskey/commit-suggester/internal/snapshot/domain/errors"
+	"github.com/alkowskey/commitlens/internal/snapshot/domain/errors"
 	"github.com/google/uuid"
 )
 

@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/alkowskey/commit-suggester/internal/common/utils"
-	diffDomain "github.com/alkowskey/commit-suggester/internal/diff/domain"
-	"github.com/alkowskey/commit-suggester/internal/diff/services"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
+	"github.com/alkowskey/commitlens/internal/common/utils"
+	diffDomain "github.com/alkowskey/commitlens/internal/diff/domain"
+	"github.com/alkowskey/commitlens/internal/diff/services"
+	"github.com/alkowskey/commitlens/internal/snapshot/domain"
+	"github.com/alkowskey/commitlens/internal/snapshot/repository"
 	"github.com/google/uuid"
 )
 
@@ -65,9 +65,20 @@ func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, e
 	}
 
 	snapshotDiffs := compareSnapshots(existingSnapshots, fileSnapshots)
-	diff := s.processSnapshotDifferences(snapshotDiffs, cachedPathPrefix)
+	diffResults := s.processSnapshotDifferences(snapshotDiffs, cachedPathPrefix)
 
-	fmt.Printf("%s", diff)
+	// Print diff results
+	for _, result := range diffResults {
+		if result.HasDifferences {
+			fmt.Printf("Differences found:\n")
+			if len(result.Added) > 0 {
+				fmt.Printf("  Added: %v\n", result.Added)
+			}
+			if len(result.Removed) > 0 {
+				fmt.Printf("  Removed: %v\n", result.Removed)
+			}
+		}
+	}
 	return snapshotDiffs, nil
 }
 
@@ -75,25 +86,38 @@ func (s *SnapshotServiceImpl) processSnapshotDifferences(
 	snapshotDiffs []domain.Snapshot,
 	cachedPathPrefix string,
 ) []diffDomain.DiffResult {
+	numWorkers := utils.Min(len(snapshotDiffs), 10)
+
+	jobs := make(chan domain.Snapshot, len(snapshotDiffs))
 	results := make(chan diffDomain.DiffResult, len(snapshotDiffs))
 	var wg sync.WaitGroup
 
-	for _, snapshotDiff := range snapshotDiffs {
+	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
-		go func(sd domain.Snapshot) {
+		go func() {
 			defer wg.Done()
-			cachedPath := fmt.Sprintf("%s/%s", cachedPathPrefix, sd.Path)
-			result, err := s.diffService.CompareFiles(sd.Path, cachedPath)
-			if err != nil {
-				panic(err)
+			for sd := range jobs {
+				cachedPath := filepath.Join(cachedPathPrefix, sd.Path)
+				result, err := s.diffService.CompareFiles(sd.Path, cachedPath)
+				if err != nil {
+					panic(err)
+				}
+				results <- result
 			}
-			results <- result
-		}(snapshotDiff)
+		}()
 	}
 
-	wg.Wait()
-	close(results)
-	var diffResults []diffDomain.DiffResult
+	for _, snapshotDiff := range snapshotDiffs {
+		jobs <- snapshotDiff
+	}
+	close(jobs)
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	diffResults := make([]diffDomain.DiffResult, 0, len(snapshotDiffs))
 	for val := range results {
 		diffResults = append(diffResults, val)
 	}

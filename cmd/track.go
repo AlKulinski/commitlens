@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/alkowskey/commit-suggester/internal/diff/infra"
-	diffServices "github.com/alkowskey/commit-suggester/internal/diff/services"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/services"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/usecases"
+	"github.com/alkowskey/commitlens/internal/diff/infra"
+	diffServices "github.com/alkowskey/commitlens/internal/diff/services"
+	"github.com/alkowskey/commitlens/internal/snapshot/repository"
+	"github.com/alkowskey/commitlens/internal/snapshot/services"
+	"github.com/alkowskey/commitlens/internal/snapshot/usecases"
 	"github.com/urfave/cli/v3"
 )
 

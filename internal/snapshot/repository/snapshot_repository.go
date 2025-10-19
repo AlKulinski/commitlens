@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 
-	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
+	"github.com/alkowskey/commitlens/internal/snapshot/domain"
 )
 
 type SnapshotRepository interface {

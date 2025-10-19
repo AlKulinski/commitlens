@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
+	"github.com/alkowskey/commitlens/internal/snapshot/domain"
 	"github.com/google/uuid"
 )
 

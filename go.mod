@@ -1,4 +1,4 @@
-module github.com/alkowskey/commit-suggester
+module github.com/alkowskey/commitlens
 
 go 1.24.0
 

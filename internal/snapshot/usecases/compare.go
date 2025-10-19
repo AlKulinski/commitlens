@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
-	"github.com/alkowskey/commit-suggester/internal/snapshot/services"
+	"github.com/alkowskey/commitlens/internal/snapshot/domain"
+	"github.com/alkowskey/commitlens/internal/snapshot/services"
 )
 
 type CompareUsecase struct {

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/alkowskey/commit-suggester/internal/diff/domain"
+	"github.com/alkowskey/commitlens/internal/diff/domain"
 )
 
 type BaseDiffer struct{}

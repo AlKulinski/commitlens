@@ -1,6 +1,6 @@
 package usecases
 
-import "github.com/alkowskey/commit-suggester/internal/snapshot/repository"
+import "github.com/alkowskey/commitlens/internal/snapshot/repository"
 
 type FlushSnapshotsUsecase struct {
 	snapshotRepository repository.SnapshotRepository

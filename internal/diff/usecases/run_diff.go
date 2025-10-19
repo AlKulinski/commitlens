@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"github.com/alkowskey/commit-suggester/internal/diff/domain"
+	"github.com/alkowskey/commitlens/internal/diff/domain"
 )
 
 type DiffUsecase struct {

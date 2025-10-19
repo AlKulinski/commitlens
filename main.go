@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/alkowskey/commit-suggester/cmd"
-	"github.com/alkowskey/commit-suggester/internal/db"
+	"github.com/alkowskey/commitlens/cmd"
+	"github.com/alkowskey/commitlens/internal/db"
 )
 
 func main() {
