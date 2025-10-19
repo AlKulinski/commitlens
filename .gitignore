@@ -1,2 +1,3 @@
 test_files
 internal/db/sqlite.db
+.cache

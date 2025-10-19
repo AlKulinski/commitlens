@@ -7,7 +7,7 @@ import (
 
 	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/services"
-	"github.com/alkowskey/commit-suggester/internal/track/usecases"
+	"github.com/alkowskey/commit-suggester/internal/snapshot/usecases"
 	"github.com/urfave/cli/v3"
 )
 

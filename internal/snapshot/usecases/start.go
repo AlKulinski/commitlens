@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"github.com/alkowskey/commit-suggester/internal/common/utils"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/services"
 )
 
@@ -15,7 +16,12 @@ func NewTrackStartUsecase(snapshotService services.SnapshotService) *StartTracke
 }
 
 func (d *StartTrackedDiffUsecase) Execute(subdirectory string) error {
-	_, err := d.SnapshotService.TakeSnapshot(subdirectory)
+	snapshotDir := d.SnapshotService.GetSnapshotDirectory(subdirectory)
+	err := utils.CopyDirectory(snapshotDir, subdirectory)
+	if err != nil {
+		return err
+	}
+	_, err = d.SnapshotService.TakeSnapshot(subdirectory)
 
 	return err
 }

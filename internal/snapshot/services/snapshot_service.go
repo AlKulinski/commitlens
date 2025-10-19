@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/alkowskey/commit-suggester/internal/common/utils"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/domain"
 	"github.com/alkowskey/commit-suggester/internal/snapshot/repository"
@@ -10,6 +12,7 @@ import (
 type SnapshotService interface {
 	TakeSnapshot(string) ([]domain.Snapshot, error)
 	Compare(string) ([]domain.Snapshot, error)
+	GetSnapshotDirectory(string) string
 }
 
 type SnapshotServiceImpl struct {
@@ -20,6 +23,16 @@ func NewSnapshotService(snapshotRepository repository.SnapshotRepository) Snapsh
 	return &SnapshotServiceImpl{
 		snapshotRepository: snapshotRepository,
 	}
+}
+
+func (s *SnapshotServiceImpl) GetSnapshotDirectory(subdirectory string) string {
+	snapshotDir, err := utils.GetWorkingDirectory()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf(".cache/%s/%s", snapshotDir, subdirectory)
 }
 
 func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, error) {
@@ -33,26 +46,9 @@ func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, e
 		return nil, err
 	}
 
-	fileSnapshots := make([]domain.Snapshot, len(files))
-
-	for i, file := range files {
-		stats, err := utils.GetFileStats(file)
-		if err != nil {
-			return nil, err
-		}
-
-		hash, err := utils.CalculateContentHash(file)
-		if err != nil {
-			return nil, err
-		}
-
-		fileSnapshots[i] = domain.Snapshot{
-			ID:    uuid.New(),
-			Path:  file,
-			Hash:  hash,
-			Size:  stats.Size,
-			Mtime: stats.LastModified,
-		}
+	fileSnapshots, err := s.buildSnapshotsFromFiles(files)
+	if err != nil {
+		return nil, err
 	}
 
 	snapshotDiffs := compareSnapshots(existingSnapshots, fileSnapshots)
@@ -70,6 +66,16 @@ func (s *SnapshotServiceImpl) TakeSnapshot(subdirectory string) ([]domain.Snapsh
 		return nil, err
 	}
 
+	fileSnapshots, err := s.buildSnapshotsFromFiles(files)
+	if err != nil {
+		return nil, err
+	}
+
+	s.snapshotRepository.StoreBatchSnapshots(fileSnapshots)
+	return fileSnapshots, nil
+}
+
+func (s *SnapshotServiceImpl) buildSnapshotsFromFiles(files []string) ([]domain.Snapshot, error) {
 	fileSnapshots := make([]domain.Snapshot, len(files))
 
 	for i, file := range files {
@@ -92,9 +98,7 @@ func (s *SnapshotServiceImpl) TakeSnapshot(subdirectory string) ([]domain.Snapsh
 		}
 	}
 
-	s.snapshotRepository.StoreBatchSnapshots(fileSnapshots)
 	return fileSnapshots, nil
-
 }
 
 func (s *SnapshotServiceImpl) verifyExistingSnapshots() error {

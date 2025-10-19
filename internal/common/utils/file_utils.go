@@ -10,6 +10,20 @@ type FileStats struct {
 	LastModified int64
 }
 
+func GetWorkingDirectory() (string, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return pwd, nil
+}
+
+func CopyDirectory(destination string, source string) error {
+	println("Copying directory", source, "to", destination)
+	err := os.CopyFS(destination, os.DirFS(source))
+	return err
+}
+
 func WalkFiles(root string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
