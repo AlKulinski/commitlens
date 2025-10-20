@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -15,7 +14,7 @@ import (
 
 type SnapshotService interface {
 	TakeSnapshot(string) ([]domain.Snapshot, error)
-	Compare(string) ([]domain.Snapshot, error)
+	Compare(string) ([]diffDomain.DiffResult, error)
 	GetSnapshotDirectory(...string) string
 	FlushSnapshots() error
 }
@@ -52,7 +51,7 @@ func (s *SnapshotServiceImpl) GetSnapshotDirectory(directories ...string) string
 	return snapshotDir
 }
 
-func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, error) {
+func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]diffDomain.DiffResult, error) {
 	cachedPathPrefix := s.GetSnapshotDirectory()
 	existingSnapshots, err := s.snapshotRepository.GetSnapshots()
 	if err != nil {
@@ -71,20 +70,7 @@ func (s *SnapshotServiceImpl) Compare(subdirectory string) ([]domain.Snapshot, e
 
 	snapshotDiffs := compareSnapshots(existingSnapshots, fileSnapshots)
 	diffResults := s.processSnapshotDifferences(snapshotDiffs, cachedPathPrefix)
-
-	// Print diff results
-	for _, result := range diffResults {
-		if result.HasDifferences {
-			fmt.Printf("Differences found:\n")
-			if len(result.Added) > 0 {
-				fmt.Printf("  Added: %v\n", result.Added)
-			}
-			if len(result.Removed) > 0 {
-				fmt.Printf("  Removed: %v\n", result.Removed)
-			}
-		}
-	}
-	return snapshotDiffs, nil
+	return diffResults, nil
 }
 
 func (s *SnapshotServiceImpl) processSnapshotDifferences(

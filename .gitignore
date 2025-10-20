@@ -2,3 +2,4 @@ test_files
 internal/db/sqlite.db
 .cache
 .kiro
+diff.txt

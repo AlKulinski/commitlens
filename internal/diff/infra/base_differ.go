@@ -13,7 +13,7 @@ func NewBaseDiffer() *BaseDiffer {
 	return &BaseDiffer{}
 }
 
-func (d *BaseDiffer) Compare(sourcePath string, targetPath string) (domain.DiffResult, error) {
+func (d *BaseDiffer) Compare(targetPath string, sourcePath string) (domain.DiffResult, error) {
 	sourceFile, err := os.Open(sourcePath)
 	if err != nil {
 		return domain.DiffResult{}, err

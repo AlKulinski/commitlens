@@ -13,7 +13,7 @@ func NewPatienceDiffer() *PatienceDiffer {
 	return &PatienceDiffer{}
 }
 
-func (d *PatienceDiffer) Compare(sourcePath string, targetPath string) (domain.DiffResult, error) {
+func (d *PatienceDiffer) Compare(targetPath string, sourcePath string) (domain.DiffResult, error) {
 	sourceFile, err := os.Open(sourcePath)
 	if err != nil {
 		return domain.DiffResult{}, err
