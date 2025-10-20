@@ -17,6 +17,7 @@ type SnapshotService interface {
 	TakeSnapshot(string) ([]domain.Snapshot, error)
 	Compare(string) ([]domain.Snapshot, error)
 	GetSnapshotDirectory(...string) string
+	FlushSnapshots() error
 }
 
 type SnapshotServiceImpl struct {
@@ -29,6 +30,10 @@ func NewSnapshotService(snapshotRepository repository.SnapshotRepository, diffSe
 		snapshotRepository: snapshotRepository,
 		diffService:        diffService,
 	}
+}
+
+func (s *SnapshotServiceImpl) FlushSnapshots() error {
+	return s.snapshotRepository.FlushSnapshots()
 }
 
 func (s *SnapshotServiceImpl) GetSnapshotDirectory(directories ...string) string {

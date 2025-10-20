@@ -1,17 +1,17 @@
 package usecases
 
-import "github.com/alkowskey/commitlens/internal/snapshot/repository"
+import "github.com/alkowskey/commitlens/internal/snapshot/services"
 
 type FlushSnapshotsUsecase struct {
-	snapshotRepository repository.SnapshotRepository
+	snapshotService services.SnapshotService
 }
 
-func NewFlushSnapshotsUsecase(snapshotRepository repository.SnapshotRepository) *FlushSnapshotsUsecase {
+func NewFlushSnapshotsUsecase(snapshotService services.SnapshotService) *FlushSnapshotsUsecase {
 	return &FlushSnapshotsUsecase{
-		snapshotRepository: snapshotRepository,
+		snapshotService: snapshotService,
 	}
 }
 
 func (u *FlushSnapshotsUsecase) Execute() error {
-	return u.snapshotRepository.FlushSnapshots()
+	return u.snapshotService.FlushSnapshots()
 }
