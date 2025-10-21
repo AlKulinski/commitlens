@@ -15,6 +15,7 @@ func newRootCmd(version string, db *sql.DB) *cli.Command {
 			newVersionCmd(version),
 			newDiffCmd(),
 			newTrackCmd(db),
+			newGroqCmd(),
 		},
 	}
 }

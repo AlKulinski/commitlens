@@ -3,3 +3,4 @@ internal/db/sqlite.db
 .cache
 .kiro
 diff.txt
+.env

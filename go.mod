@@ -7,6 +7,7 @@ toolchain go1.24.9
 require (
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose/v3 v3.26.0
 	github.com/urfave/cli/v3 v3.4.1
 	modernc.org/sqlite v1.39.1
