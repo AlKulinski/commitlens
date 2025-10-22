@@ -8,6 +8,7 @@ import (
 	"github.com/alkowskey/commitlens/internal/common/flags"
 	"github.com/alkowskey/commitlens/internal/diff/domain"
 	"github.com/alkowskey/commitlens/internal/diff/factories"
+	"github.com/alkowskey/commitlens/internal/diff/infra"
 	diffServices "github.com/alkowskey/commitlens/internal/diff/services"
 	"github.com/alkowskey/commitlens/internal/snapshot/repository"
 	"github.com/alkowskey/commitlens/internal/snapshot/services"
@@ -65,13 +66,20 @@ func newTrackCompareCmd(db *sql.DB) *cli.Command {
 				return err
 			}
 
+			summarizer := prepareSummarizer()
+
 			usecase := usecases.NewCompareUsecase(snapshotService)
 			diff, err := usecase.Execute(subdirectory)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(diff)
+			summary, err := summarizer.Summarize(ctx, diff)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(summary)
 			return nil
 		},
 	}
@@ -99,6 +107,10 @@ func newFlushCmd(db *sql.DB) *cli.Command {
 			return nil
 		},
 	}
+}
+
+func prepareSummarizer() domain.DiffSumarizer {
+	return infra.NewGroqDiffSummarizer()
 }
 
 func prepareTrackCommand(db *sql.DB, cmd *cli.Command) (string, services.SnapshotService, error) {

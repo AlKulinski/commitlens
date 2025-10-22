@@ -42,8 +42,8 @@ func newDiffCmd() *cli.Command {
 				return err
 			}
 
-			fmt.Println(result.Added)
-			fmt.Println(result.Removed)
+			fmt.Println(result)
+
 			return nil
 		},
 	}
