@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"bufio"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type FileStats struct {
@@ -52,4 +56,24 @@ func GetFileStats(path string) (FileStats, error) {
 		Size:         size,
 		LastModified: lastModified,
 	}, nil
+}
+
+func OpenOrEmpty(path string) (io.ReadCloser, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return io.NopCloser(strings.NewReader("")), nil
+		}
+		return nil, err
+	}
+	return f, nil
+}
+
+func ReadLines(reader io.Reader) ([]string, error) {
+	var lines []string
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
 }

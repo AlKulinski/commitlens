@@ -1,9 +1,7 @@
 package infra
 
 import (
-	"bufio"
-	"os"
-
+	"github.com/alkowskey/commitlens/internal/common/utils"
 	"github.com/alkowskey/commitlens/internal/diff/domain"
 )
 
@@ -14,38 +12,29 @@ func NewPatienceDiffer() *PatienceDiffer {
 }
 
 func (d *PatienceDiffer) Compare(targetPath string, sourcePath string) (domain.DiffResult, error) {
-	sourceFile, err := os.Open(sourcePath)
+	sourceFile, err := utils.OpenOrEmpty(sourcePath)
 	if err != nil {
-		return domain.DiffResult{}, err
+		panic("error opening source file")
 	}
 	defer sourceFile.Close()
 
-	targetFile, err := os.Open(targetPath)
+	targetFile, err := utils.OpenOrEmpty(targetPath)
 	if err != nil {
-		return domain.DiffResult{}, err
+		panic("error opening target file")
 	}
 	defer targetFile.Close()
 
-	sourceLines, err := readLines(sourceFile)
+	sourceLines, err := utils.ReadLines(sourceFile)
 	if err != nil {
 		return domain.DiffResult{}, err
 	}
 
-	targetLines, err := readLines(targetFile)
+	targetLines, err := utils.ReadLines(targetFile)
 	if err != nil {
 		return domain.DiffResult{}, err
 	}
 
 	return d.patienceDiff(sourceLines, targetLines), nil
-}
-
-func readLines(file *os.File) ([]string, error) {
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, scanner.Err()
 }
 
 func (d *PatienceDiffer) patienceDiff(source, target []string) domain.DiffResult {
