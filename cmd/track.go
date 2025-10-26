@@ -8,7 +8,6 @@ import (
 	"github.com/alkowskey/commitlens/internal/common/flags"
 	"github.com/alkowskey/commitlens/internal/diff/domain"
 	"github.com/alkowskey/commitlens/internal/diff/factories"
-	"github.com/alkowskey/commitlens/internal/diff/infra"
 	diffServices "github.com/alkowskey/commitlens/internal/diff/services"
 	"github.com/alkowskey/commitlens/internal/snapshot/repository"
 	"github.com/alkowskey/commitlens/internal/snapshot/services"
@@ -110,7 +109,7 @@ func newFlushCmd(db *sql.DB) *cli.Command {
 }
 
 func prepareSummarizer() domain.DiffSumarizer {
-	return infra.NewGroqDiffSummarizer()
+	return factories.CreateSummarizer()
 }
 
 func prepareTrackCommand(db *sql.DB, cmd *cli.Command) (string, services.SnapshotService, error) {
