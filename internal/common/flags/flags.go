@@ -18,4 +18,11 @@ var (
 		Usage:   "Diff algorithm (base, patience)",
 		Value:   "patience",
 	}
+
+	ModelProviderFlag = &cli.StringFlag{
+		Name:    "llm-provider",
+		Aliases: []string{"p"},
+		Usage:   "LLM provider (openai, groq)",
+		Value:   "openai",
+	}
 )

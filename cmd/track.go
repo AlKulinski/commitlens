@@ -58,14 +58,16 @@ func newTrackCompareCmd(db *sql.DB) *cli.Command {
 		Flags: []cli.Flag{
 			flags.DirectoryFlag,
 			flags.AlgorithmFlag,
+			flags.ModelProviderFlag,
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			subdirectory, snapshotService, err := prepareTrackCommand(db, cmd)
+			modelProvider := domain.ParseModelProvider(cmd.String("model-provider"))
 			if err != nil {
 				return err
 			}
 
-			summarizer := prepareSummarizer()
+			summarizer := prepareSummarizer(modelProvider)
 
 			usecase := usecases.NewCompareUsecase(snapshotService)
 			diff, err := usecase.Execute(subdirectory)
@@ -108,8 +110,8 @@ func newFlushCmd(db *sql.DB) *cli.Command {
 	}
 }
 
-func prepareSummarizer() domain.DiffSumarizer {
-	return factories.CreateSummarizer()
+func prepareSummarizer(modelProvider domain.ModelProvider) domain.DiffSumarizer {
+	return factories.CreateSummarizer(modelProvider)
 }
 
 func prepareTrackCommand(db *sql.DB, cmd *cli.Command) (string, services.SnapshotService, error) {
