@@ -5,7 +5,9 @@ import (
 	"github.com/alkowskey/commitlens/internal/diff/domain"
 )
 
-type PatienceDiffer struct{}
+type PatienceDiffer struct {
+	result domain.DiffResult
+}
 
 func NewPatienceDiffer() *PatienceDiffer {
 	return &PatienceDiffer{}
@@ -34,12 +36,17 @@ func (d *PatienceDiffer) Compare(targetPath string, sourcePath string) (domain.D
 		return domain.DiffResult{}, err
 	}
 
-	return d.patienceDiff(sourceLines, targetLines), nil
+	d.result = domain.DiffResult{
+		Path: targetPath,
+	}
+
+	d.patienceDiff(sourceLines, targetLines)
+	return d.result, nil
 }
 
-func (d *PatienceDiffer) patienceDiff(source, target []string) domain.DiffResult {
+func (d *PatienceDiffer) patienceDiff(source, target []string) {
 	matches := d.findUniqueMatches(source, target)
-	return d.buildDiffResult(source, target, matches)
+	d.buildDiffResult(source, target, matches)
 }
 
 func (d *PatienceDiffer) findUniqueMatches(source, target []string) []match {
@@ -122,34 +129,27 @@ func longestIncreasingSubsequence(matches []match) []match {
 	return result
 }
 
-func (d *PatienceDiffer) buildDiffResult(source, target []string, matches []match) domain.DiffResult {
-	result := domain.DiffResult{}
-
+func (d *PatienceDiffer) buildDiffResult(source, target []string, matches []match) {
 	sourceIdx := 0
 	targetIdx := 0
 
 	for _, m := range matches {
-		d.processRegion(&result, source, target, sourceIdx, m.sourceIdx, targetIdx, m.targetIdx)
+		d.processRegion(source, target, sourceIdx, m.sourceIdx, targetIdx, m.targetIdx)
 
 		sourceIdx = m.sourceIdx + 1
 		targetIdx = m.targetIdx + 1
 	}
 
-	d.processRegion(&result, source, target, sourceIdx, len(source), targetIdx, len(target))
-
-	return result
+	d.processRegion(source, target, sourceIdx, len(source), targetIdx, len(target))
 }
 
-func (d *PatienceDiffer) processRegion(result *domain.DiffResult, source, target []string,
+func (d *PatienceDiffer) processRegion(source, target []string,
 	sourceStart, sourceEnd, targetStart, targetEnd int) {
 
 	sourceLen := sourceEnd - sourceStart
 	targetLen := targetEnd - targetStart
 
-	maxLen := sourceLen
-	if targetLen > maxLen {
-		maxLen = targetLen
-	}
+	maxLen := max(sourceLen, targetLen)
 
 	for i := 0; i < maxLen; i++ {
 		hasSource := sourceStart+i < sourceEnd
@@ -160,16 +160,16 @@ func (d *PatienceDiffer) processRegion(result *domain.DiffResult, source, target
 			targetLine := target[targetStart+i]
 
 			if sourceLine != targetLine {
-				result.Removed = append(result.Removed, sourceLine)
-				result.Added = append(result.Added, targetLine)
-				result.HasDifferences = true
+				d.result.Removed = append(d.result.Removed, sourceLine)
+				d.result.Added = append(d.result.Added, targetLine)
+				d.result.HasDifferences = true
 			}
 		} else if hasSource {
-			result.Removed = append(result.Removed, source[sourceStart+i])
-			result.HasDifferences = true
+			d.result.Removed = append(d.result.Removed, source[sourceStart+i])
+			d.result.HasDifferences = true
 		} else if hasTarget {
-			result.Added = append(result.Added, target[targetStart+i])
-			result.HasDifferences = true
+			d.result.Added = append(d.result.Added, target[targetStart+i])
+			d.result.HasDifferences = true
 		}
 	}
 }

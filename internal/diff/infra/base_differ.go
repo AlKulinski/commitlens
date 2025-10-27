@@ -7,7 +7,9 @@ import (
 	"github.com/alkowskey/commitlens/internal/diff/domain"
 )
 
-type BaseDiffer struct{}
+type BaseDiffer struct {
+	result domain.DiffResult
+}
 
 func NewBaseDiffer() *BaseDiffer {
 	return &BaseDiffer{}
@@ -30,20 +32,18 @@ func (d *BaseDiffer) Compare(targetPath string, sourcePath string) (domain.DiffR
 		return domain.DiffResult{}, nil
 	}
 
-	diffResult, err := d.diff(sourceFile, targetFile)
+	err = d.diff(sourceFile, targetFile)
 
 	if err != nil {
-		return domain.DiffResult{}, err
+		panic(err)
 	}
 
-	return diffResult, nil
+	return d.result, nil
 }
 
-func (d *BaseDiffer) diff(sourceFile *os.File, targetFile *os.File) (domain.DiffResult, error) {
+func (d *BaseDiffer) diff(sourceFile *os.File, targetFile *os.File) error {
 	scannerSource := bufio.NewScanner(sourceFile)
 	scannerTarget := bufio.NewScanner(targetFile)
-
-	result := domain.DiffResult{}
 
 	for {
 		hasSource := scannerSource.Scan()
@@ -63,24 +63,24 @@ func (d *BaseDiffer) diff(sourceFile *os.File, targetFile *os.File) (domain.Diff
 		}
 
 		if !hasSource && hasTarget {
-			result.Added = append(result.Added, targetLine)
-			result.HasDifferences = true
+			d.result.Added = append(d.result.Added, targetLine)
+			d.result.HasDifferences = true
 		} else if hasSource && !hasTarget {
-			result.Removed = append(result.Removed, sourceLine)
-			result.HasDifferences = true
+			d.result.Removed = append(d.result.Removed, sourceLine)
+			d.result.HasDifferences = true
 		} else if sourceLine != targetLine {
-			result.Removed = append(result.Removed, sourceLine)
-			result.Added = append(result.Added, targetLine)
-			result.HasDifferences = true
+			d.result.Removed = append(d.result.Removed, sourceLine)
+			d.result.Added = append(d.result.Added, targetLine)
+			d.result.HasDifferences = true
 		}
 	}
 
 	if err := scannerSource.Err(); err != nil {
-		return domain.DiffResult{}, err
+		return err
 	}
 	if err := scannerTarget.Err(); err != nil {
-		return domain.DiffResult{}, err
+		return err
 	}
 
-	return result, nil
+	return nil
 }

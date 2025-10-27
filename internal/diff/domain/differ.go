@@ -12,6 +12,7 @@ type DiffResult struct {
 	HasDifferences bool
 	Added          []string
 	Removed        []string
+	Path           string
 }
 
 func (d DiffResult) String() string {
@@ -20,6 +21,8 @@ func (d DiffResult) String() string {
 	}
 
 	result := ""
+
+	result += "\033[1m [FILE] " + d.Path + "\033[0m\n"
 
 	for _, line := range d.Removed {
 		result += "\033[31m- " + line + "\033[0m\n"
