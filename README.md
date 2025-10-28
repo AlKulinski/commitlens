@@ -12,17 +12,30 @@ A lightweight CLI tool that tracks file changes and helps you understand what's 
 
 ## Installation
 
+### Quick Install
+
+**macOS / Linux (Homebrew):**
+```bash
+brew tap alkowskey/tap
+brew install commitlens
+```
+
+**Windows (Scoop):**
+```powershell
+scoop bucket add alkowskey https://github.com/alkowskey/scoop-bucket
+scoop install commitlens
+```
+
+**Go Install:**
 ```bash
 go install github.com/alkowskey/commitlens@latest
 ```
 
-Or build from source:
+**Download Binary:**
 
-```bash
-git clone https://github.com/alkowskey/commitlens.git
-cd commitlens
-go build
-```
+Download the latest release for your platform from [GitHub Releases](https://github.com/alkowskey/commitlens/releases).
+
+See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
 ## Configuration
 
